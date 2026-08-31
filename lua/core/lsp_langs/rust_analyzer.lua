@@ -1,0 +1,21 @@
+-- lspconfig.rust_analyzer.setup({
+--     cmd = { "rust-analyzer" },
+--     capabilities = capabilities,
+--     settings = {
+--         ['rust-analyzer'] = {
+--             imports = {
+--                 granularity = { group = "module" },
+--                 prefix = "self",
+--             },
+--             cargo = { buildScripts = { enable = true } },
+--             procMacro = { enable = true },
+--             diagnostics = { enable = true },
+--             completion = {
+--                 callable = {
+--                     -- https://rust-analyzer.github.io/book/configuration.html#completion.callable.snippets
+--                     snippets = 'add_parentheses', -- or 'none'
+--                 },
+--             },
+--         },
+--     },
+-- })

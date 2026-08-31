@@ -1,0 +1,51 @@
+-- -- NATIVE C / C++ LLDB CONFIGURATION
+-- -- Link the DAP interface to your system's lldb-dap engine
+-- dap.adapters.codelldb = {
+--     type = 'executable',
+--     command = 'lldb-dap', -- Change to 'lldb-vscode' if you are on an older system release
+--     name = 'lldb'
+-- }
+--
+-- -- Reusable configuration targets for both C and C++ projects
+-- local lldb_config = {
+--     {
+--         name = "Launch Executable (FZF Picker)",
+--         type = "codelldb",
+--         request = "launch",
+--         -- Dynamically queries files using fzf-lua so you can pick your compiled binary instantly
+--         program = function()
+--             local fzf = require("fzf-lua")
+--             local selected = nil
+--
+--             -- Blocks the thread context until you choose the compiled binary path
+--             fzf.files({
+--                 prompt = "Select Debug Binary > ",
+--                 cwd = vim.uv.cwd(),
+--                 actions = {
+--                     ["default"] = function(selections)
+--                         selected = selections[1]
+--                     end
+--                 }
+--             })
+--
+--             -- Fallback text prompt if you escape out of the FZF picker menu
+--             if not selected then
+--                 return vim.fn.input("Path to binary: ", vim.fn.getcwd() .. "/", "file")
+--             end
+--
+--             -- Convert the picked relative string into a concrete absolute path
+--             return vim.fn.fnamemodify(selected, ":p")
+--         end,
+--         cwd = '${workspaceFolder}',
+--         stopOnEntry = false,
+--         args = {},
+--
+--         -- Ensures terminal inputs and stdout print clearly inside the dap-view environment
+--         runInTerminal = false,
+--     },
+-- }
+--
+-- -- Bind the configurations to both C and C++ extensions
+-- dap.configurations.cpp = lldb_config
+-- dap.configurations.c = lldb_config
+--

@@ -1,0 +1,156 @@
+-- local dap = require("dap")
+-- local dap_view = require("dap-view")
+--
+-- -- dap_view.setup({})
+-- --this shit dont work
+--
+-- -- Automatic Layout Hooks
+-- -- dap.listeners.after.event_initialized["dap-view"] = function()
+-- --     if pcall(require, "mini.files") then
+--     --     require("mini.files").close()
+--     -- end
+--     -- vim.schedule(function()
+--     --     -- Only attempt to render if there is an active debugger session attached
+--         -- if dap.session() ~= nil then
+--         --     dap_view.open()
+--     --     end
+--     -- end)
+-- -- end
+--
+-- -- dap.listeners.before.event_terminated["dap-view"] = function()
+-- --     vim.schedule(function() dap_view.close() end)
+-- -- end
+-- -- dap.listeners.before.event_exited["dap-view"] = function()
+-- --     vim.schedule(function() dap_view.close() end)
+-- -- end
+--
+--
+-- -- Mini.files Quick Breakpoint Binding
+-- -- vim.api.nvim_create_autocmd("User", {
+-- --     pattern = "MiniFilesBufferCreate",
+-- --     callback = function(args)
+-- --         local buf_id = args.data.buf_id
+-- --         vim.keymap.set("n", ",", function()
+-- --             local fs_entry = require("mini.files").get_fs_entry()
+-- --             if fs_entry and fs_entry.type == "file" then
+-- --                 dap.toggle_breakpoint(nil, nil, nil, { buf = vim.fn.bufadd(fs_entry.path) })
+-- --                 if pcall(require, "snacks") then
+-- --                     Snacks.notify.info("Breakpoint toggled: " .. vim.fn.fnamemodify(fs_entry.path, ":t"))
+-- --                 end
+-- --             end
+-- --         end, { buffer = buf_id, desc = "DAP: Toggle breakpoint on hovered file" })
+-- --     end,
+-- -- })
+--
+-- -- Keymaps
+-- local function map(mode, lhs, rhs, desc)
+--     vim.keymap.set(mode, lhs, rhs, { silent = true, desc = desc })
+-- end
+--
+-- map("n", "<C-x>c", function() dap.continue() end, "DAP: Start / Continue Session")
+-- map("n", ",n", function() dap.step_over() end, "DAP: Next (Step Over)")
+-- map("n", ",i", function() dap.step_into() end, "DAP: Step Into")
+-- map("n", ",o", function() dap.step_out() end, "DAP: Step Out (O)")
+--
+-- -- Breakpoint Toggles
+-- map("n", ",b", function() dap.toggle_breakpoint() end, "DAP: Toggle Breakpoint")
+-- map("n", ",B", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, "DAP: Conditional Breakpoint")
+--
+-- -- Safe UI Toggle: Checks if a session is alive before launching nvim-dap-view split trees
+-- local function safe_toggle_dap_view()
+--     if dap.session() == nil then
+--         if pcall(require, "snacks") then
+--             Snacks.notify.warn("DAP session is not running! Launch it first.", { title = "DAP View Lock" })
+--         else
+--             vim.notify("DAP session is not running! Launch it first.", vim.log.levels.WARN)
+--         end
+--     else
+--         -- PROTECTED CALL FIX: Prevents layout crashes from triggering infinite loops
+--         local status, err = pcall(function()
+--             dap_view.toggle()
+--         end)
+--
+--         if not status then
+--             if pcall(require, "snacks") then
+--                 Snacks.notify.error("dap-view failed to toggle splits: " .. tostring(err), { title = "DAP View Engine Bug" })
+--             else
+--                 vim.notify("dap-view layout error caught safely: " .. tostring(err), vim.log.levels.ERROR)
+--             end
+--         end
+--     end
+-- end
+--
+-- -- Master Session & Window Layout Controls
+-- map("n", "<C-x>v", safe_toggle_dap_view, "DAP View: Toggle UI Layout")
+-- map("n", "<C-x>w", function() require("dap-view").add_expr() end, "DAP View: Watch Current Expression")
+-- map("n", "<C-x>q", function() dap.terminate() end, "DAP: Kill Active Debug Session")
+-- map("n", "<C-x>e", function() dap.restart() end, "DAP: Restart Session")
+--
+-- -- Visual Customizations
+-- vim.fn.sign_define('DapBreakpoint', { text='🛑', texthl='DapBreakpoint', linehl='', numhl='' })
+-- vim.fn.sign_define('DapBreakpointCondition', { text='🔶', texthl='DapBreakpointCondition', linehl='', numhl='' })
+-- vim.fn.sign_define('DapLogPoint', { text='📝', texthl='DapLogPoint', linehl='', numhl='' })
+-- vim.fn.sign_define('DapStopped', { text='▶️', texthl='DapStopped', linehl='Visual', numhl='' })
+-- vim.fn.sign_define('DapBreakpointRejected', { text='❌', texthl='DapBreakpointRejected', linehl='', numhl='' })
+--
+-- -- NATIVE C / C++ LLDB CONFIGURATION
+-- -- Link the DAP interface to your system's lldb-dap engine
+-- dap.adapters.codelldb = {
+--     type = 'executable',
+--     -- NixOS handles symlinks under /run/current-system/sw/bin/
+--     command = '/etc/profiles/per-user/Pedr0-LP/bin/lldb-dap',
+--     name = 'lldb'
+-- }
+--
+-- -- Reusable configuration targets for both C and C++ projects
+-- local lldb_config = {
+--     {
+--         name = "Launch Executable (FZF Picker)",
+--         type = "codelldb",
+--         request = "launch",
+--         -- Use an asynchronous DAP coroutine function
+--         program = function()
+--             return coroutine.create(function(dap_run)
+--                 local fzf = require("fzf-lua")
+--
+--                 fzf.files({
+--                     prompt = "Select Debug Binary > ",
+--                     cwd = vim.uv.cwd(),
+--                     actions = {
+--                         ["default"] = function(selections)
+--                             if selections and selections[1] then
+--                                 -- STRIP ICONS: Converts string like " ./bin/programa" into clean "./bin/programa"
+--                                 local clean_entry = fzf.path.entry_to_file(selections[1])
+--
+--                                 -- Absolute path generation
+--                                 local binary_path = vim.fn.fnamemodify(clean_entry.path, ":p")
+--
+--                                 -- SCHEDULE FIX: Wait one tick for FZF windows to close completely before launching UI
+--                                 vim.schedule(function()
+--                                     coroutine.resume(dap_run, binary_path)
+--                                 end)
+--                             else
+--                                 -- Fallback if you close FZF without choosing anything
+--                                 local fallback = vim.fn.input("Path to binary: ", vim.fn.getcwd() .. "/", "file")
+--                                 vim.schedule(function()
+--                                     coroutine.resume(dap_run, fallback)
+--                                 end)
+--                             end
+--                         end
+--                     }
+--                 })
+--             end)
+--         end,
+--         cwd = '${workspaceFolder}',
+--         stopOnEntry = false,
+--         args = {},
+--
+--         -- CHANGED TO TRUE: Routes I/O through a normal terminal layout if dap-view windows fail
+--         runInTerminal = true,
+--     },
+-- }
+--
+-- -- Bind the configurations to both C and C++ extensions
+-- dap.configurations.cpp = lldb_config
+-- dap.configurations.c = lldb_config
+--
