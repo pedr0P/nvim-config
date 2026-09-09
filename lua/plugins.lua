@@ -41,6 +41,7 @@ vim.call('plug#begin')
     Plug 'folke/which-key.nvim'
     Plug 'mbbill/undotree'
     Plug 'cbochs/grapple.nvim'
+    Plug 'karb94/neoscroll.nvim'
 
 -- Programming
     Plug 'windwp/nvim-autopairs'                                        -- ()[]{} Completion
@@ -105,6 +106,7 @@ require('configs.lualine')
 require('configs.luasnip')
 -- require('configs.tiny_cmdline')
 require('configs.mini-files')
+require('configs.neoscroll')
 require('configs.mini-surround')
 -- require('configs.snacks')
 require('configs.todo-comments')
