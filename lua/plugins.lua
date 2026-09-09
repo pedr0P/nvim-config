@@ -49,6 +49,7 @@ vim.call('plug#begin')
     Plug 'CRAG666/code_runner.nvim'                                     -- Code Running
     Plug 'mfussenegger/nvim-dap'
     Plug 'AdeAttwood/Hex.nvim'
+    Plug 'julian/lean.nvim'
 
 -- Appearance
     Plug 'rafi/awesome-vim-colorschemes'                               -- Retro Scheme
@@ -114,4 +115,3 @@ require('configs.treesitter')
 require('configs.wrapping-paper')
 require('configs.whichkey')
 require('configs.zenmode')
-require('configs.mix')
