@@ -49,8 +49,12 @@ o.wrap = false
 
 o.virtualedit = "block"
 
+o.numberwidth=4
+o.signcolumn="yes:1"
+
 -- o.scrolloff = 999
-vim.opt.scrolloff = 8
+-- vim.opt.scrolloff = 8
+vim.opt.scrolloff = 0
 
 o.ignorecase = true
 
